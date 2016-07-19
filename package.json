@@ -1,0 +1,34 @@
+{
+  "name": "cyclejs-storage",
+  "version": "1.0.0",
+  "description": "A cycle.js driver for localStorage and sessionStorage",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SuperManitu/cyclejs-storage.git"
+  },
+  "keywords": [
+    "cyclejs",
+    "storage"
+  ],
+  "author": "Jan van Brügge",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SuperManitu/cyclejs-storage/issues"
+  },
+  "homepage": "https://github.com/SuperManitu/cyclejs-storage#readme",
+  "dependencies": {
+    "@cycle/xstream-adapter": "^3.0.2"
+  },
+  "peerDependencies": {
+    "xstream": "*"
+  },
+  "devDependencies": {
+    "@cycle/base": "^4.0.1",
+    "typescript": "^1.8.10",
+    "xstream": "^5.2.1"
+  }
+}
