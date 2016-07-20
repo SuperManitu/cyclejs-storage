@@ -24,6 +24,9 @@ export interface IStorageSource
     session : ISpecificStorageSource;
 }
 
+export type specificStorageDriverType = (write$ : Stream<ISpecificKeyValuePair>, runSA? : StreamAdapter) => ISpecificStorageSource;
+export type storageDriverType = (write$ : Stream<IKeyValuePair>, runSA? : StreamAdapter) => IStorageSource;
+
 function specificStorageDriver(storage : any, write$ : Stream<ISpecificKeyValuePair>, runSA : StreamAdapter) : ISpecificStorageSource
 {
     write$.addListener({
@@ -51,14 +54,14 @@ function bindAdapter(f : Function) : Function
     return f;
 }
 
-export function makeLocalStorageDriver() : Function {
-    return bindAdapter(specificStorageDriver.bind(undefined, localStorage));
+export function makeLocalStorageDriver() : specificStorageDriverType {
+    return bindAdapter(specificStorageDriver.bind(undefined, localStorage)) as specificStorageDriverType;
 }
 
-export function makeSessionStorageDriver() : Function {
-    return bindAdapter(specificStorageDriver.bind(undefined, sessionStorage));
+export function makeSessionStorageDriver() : specificStorageDriverType {
+    return bindAdapter(specificStorageDriver.bind(undefined, sessionStorage)) as specificStorageDriverType;
 }
 
-export function makeStorageDriver() : Function {
-    return bindAdapter(storageDriver);
+export function makeStorageDriver() : storageDriverType {
+    return bindAdapter(storageDriver) as storageDriverType;
 }
