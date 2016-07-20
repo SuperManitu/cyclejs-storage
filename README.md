@@ -7,6 +7,10 @@ A [Cycle.js](http://cycle.js.org) [Driver](http://cycle.js.org/drivers.html) for
 
 (Inspired by @cylce/storage)
 
+## For breaking changes see here
+
+[Changelog](CHANGELOG.md)
+
 ## Installation
 
 ```
@@ -35,7 +39,7 @@ Cycle.run(main, drivers);
 Simple and normal use case:
 
 ```js
-function main({DOM, storage}) {
+function main({ DOM, storage }) {
    const storageRequest$ = DOM.select('input')
     .events('keypress')
     .map(function(ev) {
@@ -48,7 +52,7 @@ function main({DOM, storage}) {
 
   return {
     DOM: storage.local
-    .select('inputText')
+    .get('inputText')
     .startWith('')
     .map((text) =>
       h('input', {
@@ -59,4 +63,29 @@ function main({DOM, storage}) {
     storage: storageRequest$
   };
 }
+```
+
+Seperated usage:
+
+```js
+import { makeSessionStorageDriver } from 'cyclejs-storage';
+// ...
+
+function main({ DOM, sessionStorage }) {
+    const item$ = sessionStorage.getItem('item');
+
+    const vdom$ = item$.filter(i => !!i).map(i => h2('hello ' + i));
+
+    return {
+        DOM: vdom$,
+        sessionStorage: xs.of({ key: 'item', value: 'world' })
+    };
+}
+
+const drivers = {
+    DOM: makeDOMDriver(),
+    sessionStorage: makeSessionStorageDriver()
+};
+
+Cycle.run(main, drivers);
 ```
