@@ -1,27 +1,36 @@
+"use strict";
 var xstream_1 = require('xstream');
 var xstream_adapter_1 = require('@cycle/xstream-adapter');
-'session' | 'local';
+function specificStorageDriver(storage, write$, runSA) {
+    write$.addListener({
+        next: function (pair) { return storage.setItem(pair.key, pair.value); },
+        error: function (error) { return console.log(error); },
+        complete: function () { }
+    });
+    return {
+        getItem: function (key) { return xstream_1.default.of(storage.getItem(key)); }
+    };
+}
+function storageDriver(write$, runSA) {
+    return {
+        session: specificStorageDriver(sessionStorage, write$.filter(function (pair) { return pair.target === 'session'; }), runSA),
+        local: specificStorageDriver(localStorage, write$.filter(function (pair) { return pair.target === 'local'; }), runSA)
+    };
+}
+function bindAdapter(f) {
+    f.streamAdapter = xstream_adapter_1.default;
+    return f;
+}
+function makeLocalStorageDriver() {
+    return bindAdapter(specificStorageDriver.bind(undefined, localStorage));
+}
+exports.makeLocalStorageDriver = makeLocalStorageDriver;
+function makeSessionStorageDriver() {
+    return bindAdapter(specificStorageDriver.bind(undefined, sessionStorage));
+}
+exports.makeSessionStorageDriver = makeSessionStorageDriver;
 function makeStorageDriver() {
-    function httpDriver(write$, runSA) {
-        var writeToStorage = function (pair) {
-            var storage = pair.target === 'session' ? sessionStorage : localStorage;
-            storage.setItem(pair.key, pair.value);
-        };
-        write$.addListener({
-            next: writeToStorage,
-            error: function (error) { return console.log(error); },
-            complete: function () { }
-        });
-        var select = function (storage, key) {
-            return xstream_1.default.of(storage.getItem(key));
-        };
-        return {
-            local: { select: select.bind(undefined, localStorage) },
-            session: { select: select.bind(undefined, sessionStorage) }
-        };
-    }
-    httpDriver.streamAdapter = xstream_adapter_1.default;
-    return httpDriver;
+    return bindAdapter(storageDriver);
 }
 exports.makeStorageDriver = makeStorageDriver;
 //# sourceMappingURL=index.js.map
