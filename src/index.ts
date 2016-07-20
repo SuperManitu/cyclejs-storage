@@ -2,44 +2,63 @@ import xs, { Stream } from 'xstream';
 import { StreamAdapter } from '@cycle/base';
 import XStreamAdapter from '@cycle/xstream-adapter';
 
-export interface IKeyValuePair
+export interface ISpecificKeyValuePair
 {
     key : string;
     value : any;
+}
+
+export interface IKeyValuePair extends ISpecificKeyValuePair
+{
     target : 'session' | 'local';
+}
+
+export interface ISpecificStorageSource
+{
+    getItem : (key : string) => Stream<any>;
 }
 
 export interface IStorageSource
 {
-    local : any;
-    session : any;
+    local : ISpecificStorageSource;
+    session : ISpecificStorageSource;
+}
+
+function specificStorageDriver(storage : any, write$ : Stream<ISpecificKeyValuePair>, runSA : StreamAdapter) : ISpecificStorageSource
+{
+    write$.addListener({
+        next: pair => storage.setItem(pair.key, pair.value),
+        error: error => console.log(error),
+        complete: () => {}
+    });
+
+    return {
+        getItem: (key : string) => xs.of(storage.getItem(key))
+    };
+}
+
+function storageDriver(write$ : Stream<IKeyValuePair>, runSA : StreamAdapter) : IStorageSource
+{
+    return {
+        session: specificStorageDriver(sessionStorage, write$.filter(pair => pair.target === 'session'), runSA),
+        local: specificStorageDriver(localStorage, write$.filter(pair => pair.target === 'local'), runSA)
+    };
+}
+
+function bindAdapter(f : Function) : Function
+{
+    (<any> f).streamAdapter = XStreamAdapter;
+    return f;
+}
+
+export function makeLocalStorageDriver() : Function {
+    return bindAdapter(specificStorageDriver.bind(undefined, localStorage));
+}
+
+export function makeSessionStorageDriver() : Function {
+    return bindAdapter(specificStorageDriver.bind(undefined, sessionStorage));
 }
 
 export function makeStorageDriver() : Function {
-    function httpDriver(write$ : Stream<IKeyValuePair>, runSA : StreamAdapter) : IStorageSource
-    {
-        const writeToStorage : (pair : IKeyValuePair) => void = pair => {
-            const storage : any = pair.target === 'session' ? sessionStorage : localStorage;
-
-            storage.setItem(pair.key, pair.value);
-        };
-
-        write$.addListener({
-            next: writeToStorage,
-            error: error => console.log(error),
-            complete: () => {}
-        });
-
-        const select : (storage : any, key : string) => Stream<string> = (storage, key) => {
-            return xs.of(storage.getItem(key));
-        };
-
-        return {
-            local: { select: select.bind(undefined, localStorage) },
-            session: { select: select.bind(undefined, sessionStorage) }
-        };
-    }
-
-    (<any> httpDriver).streamAdapter = XStreamAdapter;
-    return httpDriver;
+    return bindAdapter(storageDriver);
 }
