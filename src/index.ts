@@ -2,32 +2,32 @@ import xs, { Stream } from 'xstream';
 import { StreamAdapter } from '@cycle/base';
 import XStreamAdapter from '@cycle/xstream-adapter';
 
-export interface ISpecificKeyValuePair
+export interface SpecificKeyValuePair
 {
     key : string;
     value : any;
 }
 
-export interface IKeyValuePair extends ISpecificKeyValuePair
+export interface KeyValuePair extends SpecificKeyValuePair
 {
     target : 'session' | 'local';
 }
 
-export interface ISpecificStorageSource
+export interface SpecificStorageSource
 {
     getItem : (key : string) => Stream<any>;
 }
 
-export interface IStorageSource
+export interface StorageSource
 {
-    local : ISpecificStorageSource;
-    session : ISpecificStorageSource;
+    local : SpecificStorageSource;
+    session : SpecificStorageSource;
 }
 
-export type specificStorageDriverType = (write$ : Stream<ISpecificKeyValuePair>, runSA? : StreamAdapter) => ISpecificStorageSource;
-export type storageDriverType = (write$ : Stream<IKeyValuePair>, runSA? : StreamAdapter) => IStorageSource;
+export type specificStorageDriverType = (write$ : Stream<SpecificKeyValuePair>, runSA? : StreamAdapter) => SpecificStorageSource;
+export type storageDriverType = (write$ : Stream<KeyValuePair>, runSA? : StreamAdapter) => StorageSource;
 
-function specificStorageDriver(storage : any, write$ : Stream<ISpecificKeyValuePair>, runSA : StreamAdapter) : ISpecificStorageSource
+function specificStorageDriver(storage : any, write$ : Stream<SpecificKeyValuePair>, runSA : StreamAdapter) : SpecificStorageSource
 {
     write$.addListener({
         next: pair => storage.setItem(pair.key, pair.value),
@@ -40,7 +40,7 @@ function specificStorageDriver(storage : any, write$ : Stream<ISpecificKeyValueP
     };
 }
 
-function storageDriver(write$ : Stream<IKeyValuePair>, runSA : StreamAdapter) : IStorageSource
+function storageDriver(write$ : Stream<KeyValuePair>, runSA : StreamAdapter) : StorageSource
 {
     return {
         session: specificStorageDriver(sessionStorage, write$.filter(pair => pair.target === 'session'), runSA),
