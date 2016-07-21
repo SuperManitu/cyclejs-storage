@@ -22,7 +22,7 @@ npm install --save cyclejs-storage
 Basics:
 
 ```js
-import Cycle from '@cycle/core';
+import Cycle from '@cycle/xstream-run';
 import { makeStorageDriver } from 'cyclejs-storage';
 
 function main(sources) {
