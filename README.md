@@ -52,7 +52,7 @@ function main({ DOM, storage }) {
 
   return {
     DOM: storage.local
-    .get('inputText')
+    .getItem('inputText')
     .startWith('')
     .map((text) =>
       h('input', {

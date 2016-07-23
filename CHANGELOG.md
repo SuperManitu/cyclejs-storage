@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 1.2.*
+
+### Other changes
+
+Makes now proper use of the Stream Adapter, this means you can use all the supported stream libraries of Cycle.js!
+
+Every storage driver has now a function for getting the nth key.
+
 ## Version 1.1.*
 
 ### Breaking changes

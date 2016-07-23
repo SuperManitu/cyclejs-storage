@@ -15,7 +15,8 @@ export interface KeyValuePair extends SpecificKeyValuePair
 
 export interface SpecificStorageSource
 {
-    getItem : (key : string) => Stream<any>;
+    getItem : (key : string) => any; // Both results are streams in the library of choice
+    nthKey : (n : number) => any;
 }
 
 export interface StorageSource
@@ -27,16 +28,22 @@ export interface StorageSource
 export type specificStorageDriverType = (write$ : Stream<SpecificKeyValuePair>, runSA? : StreamAdapter) => SpecificStorageSource;
 export type storageDriverType = (write$ : Stream<KeyValuePair>, runSA? : StreamAdapter) => StorageSource;
 
+function adapt(storage : any, write$ : Stream<SpecificKeyValuePair>, runSA : StreamAdapter, extractor : (storage : any) => any)
+{
+    return runSA.adapt(write$.map(p => p.value).startWith(extractor(storage)), XStreamAdapter.streamSubscribe);
+}
+
 function specificStorageDriver(storage : any, write$ : Stream<SpecificKeyValuePair>, runSA : StreamAdapter) : SpecificStorageSource
 {
     write$.addListener({
         next: pair => storage.setItem(pair.key, pair.value),
-        error: error => console.log(error),
+        error: () => {},
         complete: () => {}
     });
 
     return {
-        getItem: (key : string) => xs.of(storage.getItem(key))
+        getItem: (key : string) => adapt(storage, write$, runSA, s => s.getItem(key)),
+        nthKey: (n : number) => adapt(storage, write$, runSA, s => s.key(n)),
     };
 }
 

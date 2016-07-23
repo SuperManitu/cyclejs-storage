@@ -1,12 +1,12 @@
 {
   "name": "cyclejs-storage",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "description": "A cycle.js driver for localStorage and sessionStorage",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
   "scripts": {
-    "build": "./node_modules/.bin/tsc --declaration",
-    "buildWindows": ".\\node_modules\\.bin\\tsc --declaration"
+    "build": "./node_modules/.bin/tsc",
+    "buildWindows": ".\\node_modules\\.bin\\tsc"
   },
   "repository": {
     "type": "git",
