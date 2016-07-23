@@ -6,6 +6,7 @@ export interface SpecificKeyValuePair
 {
     key : string;
     value : any;
+    action? : 'setItem' | 'removeItem' | 'clear';
 }
 
 export interface KeyValuePair extends SpecificKeyValuePair
@@ -36,7 +37,10 @@ function adapt(storage : any, write$ : Stream<SpecificKeyValuePair>, runSA : Str
 function specificStorageDriver(storage : any, write$ : Stream<SpecificKeyValuePair>, runSA : StreamAdapter) : SpecificStorageSource
 {
     write$.addListener({
-        next: pair => storage.setItem(pair.key, pair.value),
+        next: req => {
+          var action = req.action || 'setItem';
+          storage[action](req.key, req.value);
+        },
         error: () => {},
         complete: () => {}
     });
